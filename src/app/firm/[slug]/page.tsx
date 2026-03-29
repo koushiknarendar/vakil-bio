@@ -50,7 +50,7 @@ export default async function FirmPage({ params }: Props) {
 
   const members = (membersData ?? []).map(m => ({
     role: m.role,
-    lawyer: m.lawyer as {
+    lawyer: m.lawyer as unknown as {
       id: string; full_name: string; username: string; photo_url?: string
       title?: string; location?: string; is_verified: boolean
       verified_until?: string; verification_type?: string; years_experience?: number
