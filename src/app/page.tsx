@@ -17,10 +17,66 @@ import { Footer } from '@/components/Footer'
 export const metadata: Metadata = {
   title: 'vakil.bio — Your legal profile, in one link',
   description: 'Indian advocates: create your professional profile, accept bookings, and grow your practice. Free to get started.',
+  keywords: 'lawyer profile India, advocate profile, legal consultation India, vakil.bio, Indian lawyer directory, book a lawyer',
+  alternates: { canonical: 'https://vakil.bio' },
   openGraph: {
     title: 'vakil.bio — Your legal profile, in one link',
     description: 'Indian advocates: create your professional profile, accept bookings, and grow your practice.',
     type: 'website',
+    url: 'https://vakil.bio',
+    siteName: 'vakil.bio',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'vakil.bio — Your legal profile, in one link',
+    description: 'Indian advocates: create your professional profile, accept bookings, and grow your practice.',
+  },
+}
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'vakil.bio',
+  url: 'https://vakil.bio',
+  description: 'Professional profile platform for Indian advocates',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: 'https://vakil.bio/discover?q={search_term_string}',
+    'query-input': 'required name=search_term_string',
+  },
+}
+
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'vakil.bio',
+  url: 'https://vakil.bio',
+  logo: 'https://vakil.bio/logo.png',
+  description: 'The professional profile platform for Indian advocates. Create your profile, accept bookings, and grow your practice.',
+  foundingDate: '2025',
+  areaServed: 'IN',
+  serviceType: 'Legal Professional Directory',
+  sameAs: [
+    'https://twitter.com/vakilbio',
+  ],
+}
+
+const serviceJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'vakil.bio',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  url: 'https://vakil.bio',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'INR',
+    description: 'Free professional profile for Indian advocates',
+  },
+  audience: {
+    '@type': 'Audience',
+    audienceType: 'Indian Advocates and Legal Professionals',
   },
 }
 
@@ -32,6 +88,10 @@ const AVATARS = [
 
 export default function HomePage() {
   return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }} />
     <div className="min-h-screen" style={{ background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
 
       {/* ── Nav ── */}
@@ -361,5 +421,6 @@ export default function HomePage() {
       <Footer />
 
     </div>
+    </>
   )
 }
