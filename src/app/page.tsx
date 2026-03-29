@@ -161,7 +161,7 @@ export default function HomePage() {
               ))}
             </div>
             <div className="text-left">
-              <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>500+ advocates trust vakil.bio</div>
+              <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Trusted by advocates across India</div>
               <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Profiles created across India</div>
             </div>
           </div>
