@@ -249,11 +249,7 @@ export default async function FirmPage({ params }: Props) {
                     <Link key={l.username} href={`/${l.username}`} style={{ textDecoration: 'none' }}>
                       <div style={{
                         border: '1px solid #EEF0F6', borderRadius: '16px', padding: '16px',
-                        transition: 'box-shadow 0.15s',
-                      }}
-                        onMouseEnter={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(79,122,255,0.1)'}
-                        onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow = 'none'}
-                      >
+                      }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           {l.photo_url ? (
                             <img src={l.photo_url} alt={l.full_name}
