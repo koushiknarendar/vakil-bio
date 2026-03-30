@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Phone, ArrowRight, ChevronLeft } from 'lucide-react'
+import { Mail, ArrowRight, ChevronLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 export const dynamic = 'force-dynamic'
@@ -13,20 +13,17 @@ export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  const [step, setStep] = useState<'phone' | 'otp'>('phone')
-  const [phone, setPhone] = useState('')
+  const [step, setStep] = useState<'email' | 'otp'>('email')
+  const [email, setEmail] = useState('')
   const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const formatPhone = (value: string) => value.replace(/\D/g, '').slice(0, 10)
-
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    if (phone.length !== 10) { setError('Please enter a valid 10-digit mobile number'); return }
     setLoading(true)
-    const { error } = await supabase.auth.signInWithOtp({ phone: `+91${phone}` })
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } })
     setLoading(false)
     if (error) { setError(error.message); return }
     setStep('otp')
@@ -37,7 +34,7 @@ export default function LoginPage() {
     setError('')
     if (otp.length !== 6) { setError('Please enter the 6-digit OTP'); return }
     setLoading(true)
-    const { data, error } = await supabase.auth.verifyOtp({ phone: `+91${phone}`, token: otp, type: 'sms' })
+    const { data, error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'email' })
     if (error) { setLoading(false); setError(error.message); return }
     if (data.user) {
       const { data: lawyer } = await supabase.from('lawyers').select('id').eq('user_id', data.user.id).single()
@@ -69,12 +66,10 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4"
       style={{ background: 'var(--bg-surface)', color: 'var(--text-primary)' }}>
 
-      {/* Subtle glow */}
       <div className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] opacity-30"
         style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(79,122,255,0.2) 0%, transparent 70%)' }} />
 
       <div className="relative w-full max-w-sm">
-        {/* Logo */}
         <div className="flex justify-center mb-8">
           <Link href="/">
             <Image src="/logo.png" alt="vakil.bio" width={130} height={40}
@@ -82,37 +77,31 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Card */}
         <div className="glass rounded-2xl p-8">
-          {step === 'phone' ? (
+          {step === 'email' ? (
             <>
               <div className="mb-6">
                 <h1 className="font-heading text-2xl font-bold mb-1.5" style={{ color: 'var(--text-primary)' }}>
                   Welcome back
                 </h1>
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Enter your mobile number to continue
+                  Enter your email to receive a login code
                 </p>
               </div>
 
               <form onSubmit={handleSendOTP} className="space-y-4">
                 <div>
                   <label className="text-sm font-medium block mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                    Mobile Number
+                    Email Address
                   </label>
-                  <div className="flex gap-2">
-                    <div className="flex items-center justify-center px-3 rounded-xl text-sm shrink-0 gap-1"
-                      style={{ background: 'var(--bg-surface)', border: '1px solid rgba(15,23,42,0.15)', color: 'var(--text-muted)' }}>
-                      <Phone className="w-3.5 h-3.5" />
-                      +91
-                    </div>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
                     <input
-                      type="tel"
-                      inputMode="numeric"
-                      placeholder="98765 43210"
-                      value={phone}
-                      onChange={(e) => setPhone(formatPhone(e.target.value))}
-                      style={inputStyle}
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      style={{ ...inputStyle, paddingLeft: '36px' }}
                       required
                       autoFocus
                     />
@@ -135,30 +124,30 @@ export default function LoginPage() {
           ) : (
             <>
               <div className="mb-6">
-                <button onClick={() => { setStep('phone'); setOtp(''); setError('') }}
+                <button onClick={() => { setStep('email'); setOtp(''); setError('') }}
                   className="flex items-center gap-1 text-sm mb-4 transition-colors"
                   style={{ color: 'var(--text-muted)' }}>
                   <ChevronLeft className="w-4 h-4" /> Back
                 </button>
                 <h1 className="font-heading text-2xl font-bold mb-1.5" style={{ color: 'var(--text-primary)' }}>
-                  Enter OTP
+                  Check your email
                 </h1>
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  We sent a 6-digit code to +91 {phone}
+                  We sent a 6-digit code to <strong>{email}</strong>
                 </p>
               </div>
 
               <form onSubmit={handleVerifyOTP} className="space-y-4">
                 <div>
                   <label className="text-sm font-medium block mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                    6-digit OTP
+                    6-digit code
                   </label>
                   <input
-                    type="tel"
+                    type="text"
                     inputMode="numeric"
                     placeholder="• • • • • •"
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     style={{ ...inputStyle, textAlign: 'center', fontSize: '24px', letterSpacing: '0.4em', padding: '12px 16px', fontFamily: 'monospace' }}
                     required
                     autoFocus
@@ -180,7 +169,7 @@ export default function LoginPage() {
                 <button type="button" onClick={handleSendOTP}
                   className="w-full text-sm py-2 transition-colors"
                   style={{ color: 'var(--text-muted)' }}>
-                  Didn&apos;t receive OTP? Resend
+                  Didn&apos;t receive it? Resend
                 </button>
               </form>
             </>
@@ -189,9 +178,9 @@ export default function LoginPage() {
 
         <p className="text-center text-xs mt-5" style={{ color: 'var(--text-muted)' }}>
           By continuing, you agree to our{' '}
-          <Link href="/terms" className="underline transition-colors" style={{ color: 'var(--text-secondary)' }}>Terms</Link>{' '}
+          <Link href="/terms" className="underline" style={{ color: 'var(--text-secondary)' }}>Terms</Link>{' '}
           and{' '}
-          <Link href="/privacy" className="underline transition-colors" style={{ color: 'var(--text-secondary)' }}>Privacy Policy</Link>
+          <Link href="/privacy" className="underline" style={{ color: 'var(--text-secondary)' }}>Privacy Policy</Link>
         </p>
       </div>
     </div>
