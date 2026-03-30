@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -70,8 +71,8 @@ export function MobileSidebar({ lawyer, initials, lawyerIsVerified, daysLeft }: 
         />
       </div>
 
-      {/* Drawer overlay */}
-      {open && (
+      {/* Drawer — portaled to body to escape header stacking context */}
+      {open && createPortal(
         <div className="fixed inset-0 z-50 lg:hidden">
           {/* Backdrop */}
           <div
@@ -192,7 +193,8 @@ export function MobileSidebar({ lawyer, initials, lawyerIsVerified, daysLeft }: 
               </div>
             </div>
           </aside>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
