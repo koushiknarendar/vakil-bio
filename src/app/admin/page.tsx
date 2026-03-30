@@ -1,6 +1,6 @@
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Users, CalendarCheck, IndianRupee, MessageSquare, TrendingUp, BadgeCheck } from 'lucide-react'
+import { requireAdmin } from '@/lib/adminAuth'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,12 +19,8 @@ function Stat({ label, value, icon: Icon, color }: { label: string; value: strin
 }
 
 export default async function AdminOverviewPage() {
+  await requireAdmin()
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
-
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase())
-  if (!adminEmails.includes(user.email?.toLowerCase() ?? '')) redirect('/not-found')
 
   const [lawyersRes, bookingsRes, grievancesRes] = await Promise.all([
     supabase.from('lawyers').select('id, is_verified, created_at', { count: 'exact' }),

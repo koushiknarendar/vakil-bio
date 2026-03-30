@@ -1,19 +1,17 @@
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { AdminLawyerActions } from './AdminLawyerActions'
+import { requireAdmin } from '@/lib/adminAuth'
 
 export const dynamic = 'force-dynamic'
 
 interface PageProps { params: Promise<{ id: string }> }
 
 export default async function AdminLawyerDetailPage({ params }: PageProps) {
+  await requireAdmin()
   const { id } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase())
-  if (!adminEmails.includes(user.email?.toLowerCase() ?? '')) redirect('/not-found')
 
   const { data: lawyer } = await supabase.from('lawyers').select('*').eq('id', id).single()
   if (!lawyer) notFound()

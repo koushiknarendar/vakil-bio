@@ -1,16 +1,13 @@
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { BadgeCheck, ExternalLink } from 'lucide-react'
+import { requireAdmin } from '@/lib/adminAuth'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminLawyersPage() {
+  await requireAdmin()
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase())
-  if (!adminEmails.includes(user.email?.toLowerCase() ?? '')) redirect('/not-found')
 
   const { data: lawyers } = await supabase
     .from('lawyers')

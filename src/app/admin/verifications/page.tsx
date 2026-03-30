@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
-import { redirect } from 'next/navigation'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { BadgeCheck, Clock, XCircle, CheckCircle } from 'lucide-react'
 import { VerificationActions } from './VerificationActions'
+import { NotifyButton } from './NotifyButton'
+import { requireAdmin } from '@/lib/adminAuth'
 
 interface VerificationApp {
   id: string
@@ -31,12 +32,7 @@ function timeAgo(iso: string) {
 }
 
 export default async function AdminVerificationsPage() {
-  const authSupabase = await createServerClient()
-  const { data: { user } } = await authSupabase.auth.getUser()
-  if (!user) redirect('/auth/login')
-
-  const adminPhones = (process.env.ADMIN_PHONES || '').split(',').map(e => e.trim())
-  if (!adminPhones.includes(user.phone ?? '')) redirect('/dashboard')
+  await requireAdmin()
 
   const supabase = getServiceSupabase()
 
@@ -67,15 +63,21 @@ export default async function AdminVerificationsPage() {
   const pendingWithUrls = appsWithUrls.filter(a => a.status === 'pending')
   const reviewedWithUrls = appsWithUrls.filter(a => a.status !== 'pending')
 
+  const { count: unverifiedCount } = await supabase
+    .from('lawyers')
+    .select('id', { count: 'exact', head: true })
+    .eq('is_verified', false)
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Verification Applications</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-            {pending.length} pending · {reviewed.length} reviewed
+            {pending.length} pending · {reviewed.length} reviewed · {unverifiedCount ?? 0} unverified lawyers
           </p>
         </div>
+        <NotifyButton unverifiedCount={unverifiedCount ?? 0} />
       </div>
 
       {/* Pending */}
