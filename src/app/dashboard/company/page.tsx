@@ -108,6 +108,7 @@ export default function CompanyPage() {
   const [copied, setCopied] = useState(false)
   const [generatingInvite, setGeneratingInvite] = useState(false)
   const [removingId, setRemovingId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://vakil.bio'
 
@@ -156,7 +157,7 @@ export default function CompanyPage() {
     init()
   }, [])
 
-  // Slug availability check
+  // Slug availability check — depends on [slug] only, skips when editing existing firm
   useEffect(() => {
     if (company) return // don't check when editing existing firm
     if (!slug || slug.length < 3) { setSlugAvailable(null); return }
@@ -167,7 +168,7 @@ export default function CompanyPage() {
       setCheckingSlug(false)
     }, 500)
     return () => clearTimeout(timer)
-  }, [slug, company])
+  }, [slug])
 
   function populateForm(c: Company) {
     setName(c.name || '')
@@ -285,11 +286,41 @@ export default function CompanyPage() {
     setRemovingId(null)
   }
 
+  async function deleteFirm() {
+    if (!company) return
+    if (!confirm('Are you sure you want to delete this firm? This action cannot be undone.')) return
+    setDeleting(true)
+    const res = await fetch(`/api/company/${company.id}`, { method: 'DELETE' })
+    if (res.ok) {
+      setCompany(null)
+      setMyRole(null)
+      setMembers([])
+      setInviteToken(null)
+      setInviteExpiry(null)
+      setName(''); setSlug(''); setTagline(''); setAbout(''); setWebsite('')
+      setEmail(''); setPhone(''); setLocation(''); setPracticeAreas([])
+      setFoundedYear(''); setTeamSize('')
+      setSlugAvailable(null)
+    } else {
+      const json = await res.json()
+      alert(json.error || 'Could not delete firm')
+    }
+    setDeleting(false)
+  }
+
   function copyInviteLink() {
     if (!inviteToken) return
     navigator.clipboard.writeText(`${BASE}/join/${inviteToken}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  function toggleArea(area: string) {
+    const selected = practiceAreas.includes(area)
+    setPracticeAreas(prev => {
+      if (prev.length >= 5 && !selected) return prev
+      return selected ? prev.filter(a => a !== area) : [...prev, area]
+    })
   }
 
   if (loading) {
@@ -299,7 +330,7 @@ export default function CompanyPage() {
   const isAdmin = myRole === 'admin'
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 pb-20 lg:pb-6">
+    <div className="max-w-2xl mx-auto space-y-5 lg:pb-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -323,6 +354,24 @@ export default function CompanyPage() {
           </a>
         )}
       </div>
+
+      {/* Stats cards (only when firm exists) */}
+      {company && (
+        <div className="grid grid-cols-3 gap-3">
+          <div className="glass rounded-xl p-4 text-center">
+            <div className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{members.length}</div>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Members</div>
+          </div>
+          <div className="glass rounded-xl p-4 text-center">
+            <div className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{practiceAreas.length}</div>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Practice Areas</div>
+          </div>
+          <div className="glass rounded-xl p-4 text-center">
+            <div className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{foundedYear || '—'}</div>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Founded</div>
+          </div>
+        </div>
+      )}
 
       {/* Logo (admin, edit only) */}
       {company && isAdmin && (
@@ -406,7 +455,7 @@ export default function CompanyPage() {
                 <p className="text-xs mt-1" style={{ color: '#DC2626' }}>This handle is already taken. Try another.</p>
               )}
               <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                Lowercase letters, numbers and hyphens only. Can't be changed later.
+                Lowercase letters, numbers and hyphens only. Can&apos;t be changed later.
               </p>
             </>
           )}
@@ -427,7 +476,7 @@ export default function CompanyPage() {
 
       {/* Contact & Location */}
       <Card title="Contact & Location">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Label><span className="flex items-center gap-1.5"><MapPin className="w-3 h-3" />Location</span></Label>
             <input value={location} onChange={e => setLocation(e.target.value)}
@@ -452,22 +501,24 @@ export default function CompanyPage() {
       </Card>
 
       {/* Practice Areas */}
-      <Card title="Practice Areas">
+      <Card title={`Practice Areas (${practiceAreas.length}/5)`}>
         <div className="flex flex-wrap gap-2">
           {PRACTICE_AREAS.map(area => {
             const active = practiceAreas.includes(area)
+            const maxed = practiceAreas.length >= 5 && !active
             return (
               <button key={area} type="button"
-                onClick={() => isAdmin || !company
-                  ? setPracticeAreas(prev => active ? prev.filter(a => a !== area) : [...prev, area])
+                onClick={() => (isAdmin || !company) && !maxed
+                  ? toggleArea(area)
                   : undefined}
                 className="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
                 style={{
                   border: '1px solid',
                   borderColor: active ? '#4F7AFF' : 'var(--border)',
                   background: active ? '#4F7AFF' : 'transparent',
-                  color: active ? '#fff' : 'var(--text-secondary)',
-                  cursor: isAdmin || !company ? 'pointer' : 'default',
+                  color: active ? '#fff' : maxed ? 'var(--text-muted)' : 'var(--text-secondary)',
+                  cursor: (isAdmin || !company) && !maxed ? 'pointer' : 'default',
+                  opacity: maxed ? 0.5 : 1,
                 }}>
                 {area}
               </button>
@@ -498,7 +549,7 @@ export default function CompanyPage() {
 
       {/* Save button (admin or creating) */}
       {(isAdmin || !company) && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             {saveStatus === 'success' && (
               <span className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--green)' }}>
@@ -512,7 +563,7 @@ export default function CompanyPage() {
             )}
           </div>
           <button onClick={handleSave} disabled={saving || !name.trim() || (!company && slugAvailable !== true)}
-            className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl disabled:opacity-50"
+            className="flex items-center justify-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl disabled:opacity-50 w-full sm:w-auto"
             style={{ background: 'var(--blue)', color: '#fff' }}>
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             {company ? 'Save Changes' : 'Create Firm'}
@@ -619,6 +670,25 @@ export default function CompanyPage() {
             style={{ color: '#DC2626', border: '1px solid rgba(220,38,38,0.2)', background: 'rgba(220,38,38,0.04)' }}>
             {removingId === lawyerId ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
             Leave Firm
+          </button>
+        </div>
+      )}
+
+      {/* Danger zone — delete firm (admin only) */}
+      {company && isAdmin && (
+        <div className="glass rounded-2xl p-6 space-y-3" style={{ border: '1px solid rgba(220,38,38,0.2)' }}>
+          <h2 className="font-semibold text-sm" style={{ color: '#DC2626' }}>Danger Zone</h2>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            Permanently delete this firm and remove all members. This cannot be undone.
+          </p>
+          <button
+            onClick={deleteFirm}
+            disabled={deleting}
+            className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl"
+            style={{ color: '#DC2626', border: '1px solid rgba(220,38,38,0.3)', background: 'rgba(220,38,38,0.06)' }}
+          >
+            {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            Delete Firm
           </button>
         </div>
       )}

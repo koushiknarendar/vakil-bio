@@ -1,24 +1,28 @@
 import { ImageResponse } from 'next/og'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
+function getSupabase() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+}
+
 export default async function OGImage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const supabase = await createClient()
+  const supabase = getSupabase()
 
   const { data: company } = await supabase
     .from('companies')
-    .select('name, tagline, location, logo_url, practice_areas, founded_year')
+    .select('id, name, tagline, location, logo_url, practice_areas, founded_year')
     .eq('slug', slug)
     .single()
 
   const { count: memberCount } = await supabase
     .from('company_members')
     .select('id', { count: 'exact', head: true })
-    .eq('company_id', slug)
+    .eq('company_id', company?.id ?? '')
 
   const name = company?.name ?? 'Law Firm'
   const tagline = company?.tagline ?? ''
