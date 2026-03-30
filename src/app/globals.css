@@ -44,6 +44,10 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+button, a, [role="button"] {
+  touch-action: manipulation;
+}
+
 /* Prevent iOS Safari auto-zoom on input focus */
 input, textarea, select {
   font-size: 16px;

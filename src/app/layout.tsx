@@ -23,6 +23,11 @@ const instrumentSerif = Instrument_Serif({
   display: 'swap',
 })
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+}
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://vakil.bio'),
   title: 'vakil.bio — Your professional profile, in one link',
