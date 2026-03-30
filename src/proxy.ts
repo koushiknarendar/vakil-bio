@@ -4,10 +4,22 @@ import { NextResponse, type NextRequest } from 'next/server'
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
 
+const normalize = (p: string) => p.replace(/^\+/, '')
+
 export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  const hostname = request.headers.get('x-forwarded-host') || request.headers.get('host') || ''
+  const isManage = hostname.startsWith('manage.')
+
+  // Rewrite manage.vakil.bio → /admin/*
+  if (isManage) {
+    const { pathname } = request.nextUrl
+    if (!pathname.startsWith('/admin') && !pathname.startsWith('/api') && !pathname.startsWith('/_next')) {
+      const target = pathname === '/' ? '/admin/sign-in' : `/admin${pathname}`
+      return NextResponse.rewrite(new URL(target, request.url))
+    }
+  }
+
+  let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
     SUPABASE_URL,
@@ -18,12 +30,8 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-          supabaseResponse = NextResponse.next({
-            request,
-          })
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -32,9 +40,7 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
   // Protect dashboard routes
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
@@ -46,14 +52,17 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Protect admin routes — return 404 to not reveal existence
-  if (request.nextUrl.pathname.startsWith('/admin')) {
+  // Protect admin routes (except sign-in)
+  if (
+    request.nextUrl.pathname.startsWith('/admin') &&
+    !request.nextUrl.pathname.startsWith('/admin/sign-in')
+  ) {
     if (!user) {
-      return NextResponse.rewrite(new URL('/not-found', request.url))
+      return NextResponse.redirect(new URL('/admin/sign-in', request.url))
     }
-    const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase())
-    if (!adminEmails.includes((user.email || '').toLowerCase())) {
-      return NextResponse.rewrite(new URL('/not-found', request.url))
+    const adminPhones = (process.env.ADMIN_PHONES || '').split(',').map(p => normalize(p.trim()))
+    if (!adminPhones.includes(normalize(user.phone ?? ''))) {
+      return NextResponse.redirect(new URL('/admin/sign-in', request.url))
     }
   }
 
