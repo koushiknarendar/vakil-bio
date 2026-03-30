@@ -1,14 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Phone, ArrowRight, ChevronLeft, ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function AdminSignInPage() {
-  const router = useRouter()
   const supabase = createClient()
 
   const [step, setStep] = useState<'phone' | 'otp'>('phone')
@@ -46,10 +44,9 @@ export default function AdminSignInPage() {
     setError('')
     if (otp.length !== 6) { setError('Enter the 6-digit OTP'); return }
     setLoading(true)
-    const { data, error } = await supabase.auth.verifyOtp({ phone: `+91${phone}`, token: otp, type: 'sms' })
+    const { error } = await supabase.auth.verifyOtp({ phone: `+91${phone}`, token: otp, type: 'sms' })
     if (error) { setLoading(false); setError(error.message); return }
-    if (data.user) router.push('/')
-    setLoading(false)
+    window.location.href = '/'
   }
 
   return (
