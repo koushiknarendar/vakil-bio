@@ -186,19 +186,14 @@ export default function CompanyPage() {
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file || !company) return
-    if (file.size > 3 * 1024 * 1024) { alert('Logo must be under 3MB'); return }
     setUploadingLogo(true)
-    const ext = file.name.split('.').pop()
-    const path = `${company.id}/logo.${ext}`
-    const { error: uploadError } = await supabase.storage.from('company-logos').upload(path, file, { upsert: true })
-    if (uploadError) { alert('Upload failed'); setUploadingLogo(false); return }
-    const { data: { publicUrl } } = supabase.storage.from('company-logos').getPublicUrl(path)
-    await fetch(`/api/company/${company.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ logo_url: publicUrl }),
-    })
-    setCompany(prev => prev ? { ...prev, logo_url: publicUrl } : prev)
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('companyId', company.id)
+    const res = await fetch('/api/upload-company-logo', { method: 'POST', body: formData })
+    const json = await res.json()
+    if (!res.ok) { alert(json.error || 'Upload failed'); setUploadingLogo(false); return }
+    setCompany(prev => prev ? { ...prev, logo_url: json.url } : prev)
     setUploadingLogo(false)
   }
 

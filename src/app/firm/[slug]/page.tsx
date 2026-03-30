@@ -2,9 +2,16 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Metadata } from 'next'
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { BadgeCheck, MapPin, Globe, Mail, Phone, Calendar, Users, Building2 } from 'lucide-react'
 import { Footer } from '@/components/Footer'
+
+function getSupabase() {
+  return createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://vakil.bio'
 
@@ -14,7 +21,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const supabase = await createClient()
+  const supabase = getSupabase()
   const { data: company } = await supabase.from('companies').select('name, tagline, location').eq('slug', slug).single()
   if (!company) return { title: 'Firm Not Found' }
 
@@ -32,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function FirmPage({ params }: Props) {
   const { slug } = await params
-  const supabase = await createClient()
+  const supabase = getSupabase()
 
   const { data: company } = await supabase
     .from('companies')
