@@ -39,6 +39,7 @@ export default function OnboardingPage() {
   const [checkingUsername, setCheckingUsername] = useState(false)
 
   const [fullName, setFullName] = useState('')
+  const [email, setEmail] = useState('')
   const [title, setTitle] = useState('')
   const [yearsExp, setYearsExp] = useState('')
   const [location, setLocation] = useState('')
@@ -48,10 +49,15 @@ export default function OnboardingPage() {
   const [consultDuration, setConsultDuration] = useState<15 | 30 | 60>(30)
   const [consultPrice, setConsultPrice] = useState(999)
 
+  const [userPhone, setUserPhone] = useState('')
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) router.push('/auth/login')
-      else setUserId(data.user.id)
+      else {
+        setUserId(data.user.id)
+        setUserPhone(data.user.phone ?? '')
+      }
     })
   }, [])
 
@@ -74,7 +80,7 @@ export default function OnboardingPage() {
       const { data: lawyer, error: lawyerError } = await supabase
         .from('lawyers')
         .insert({
-          user_id: userId, username, full_name: fullName, title,
+          user_id: userId, username, full_name: fullName, email, phone: userPhone, title,
           years_experience: yearsExp ? parseInt(yearsExp) : 0,
           location, practice_areas: selectedAreas, languages: selectedLanguages,
           plan: 'free', show_bci_disclaimer: true,
@@ -120,7 +126,7 @@ export default function OnboardingPage() {
 
   const canGoNext = () => {
     if (step === 1) return username.length >= 3 && usernameAvailable === true
-    if (step === 2) return fullName.trim().length >= 2
+    if (step === 2) return fullName.trim().length >= 2 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
     return consultPrice > 0
   }
 
@@ -234,6 +240,15 @@ export default function OnboardingPage() {
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Full Name *</label>
                 <input type="text" placeholder="Adv. Rahul Sharma" value={fullName}
                   onChange={(e) => setFullName(e.target.value)} style={inputSt} />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Email Address *</label>
+                <input type="email" placeholder="you@example.com" value={email}
+                  onChange={(e) => setEmail(e.target.value)} style={inputSt} />
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                  For booking confirmations and important updates
+                </p>
               </div>
 
               <div>

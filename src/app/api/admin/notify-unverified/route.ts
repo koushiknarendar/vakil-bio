@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import twilio from 'twilio'
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://vakil.bio'
 
@@ -42,6 +43,21 @@ function verificationEmail(name: string) {
   `
 }
 
+function whatsappMessage(name: string) {
+  return `Hi ${name} 👋
+
+Your *vakil.bio* profile is live! Get your ✦ *Verified Advocate* badge to stand out and build more client trust.
+
+Benefits:
+• Blue Verified badge on your profile
+• Higher ranking in search results
+• More consultation requests
+
+Verification takes just a few minutes. Submit your Bar Council enrollment number and documents — our team reviews within 24–48 hours.
+
+👉 ${BASE}/dashboard/verification`
+}
+
 export async function POST(req: NextRequest) {
   const authSupabase = await createServerClient()
   const { data: { user } } = await authSupabase.auth.getUser()
@@ -53,37 +69,57 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  if (!process.env.RESEND_API_KEY) return Response.json({ error: 'Resend not configured' }, { status: 500 })
-
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
   const { data: lawyers } = await supabase
     .from('lawyers')
-    .select('full_name, email')
+    .select('full_name, email, phone')
     .eq('is_verified', false)
-    .not('email', 'is', null)
 
   if (!lawyers || lawyers.length === 0) {
-    return Response.json({ sent: 0, message: 'No unverified lawyers with email' })
+    return Response.json({ emailSent: 0, whatsappSent: 0, total: 0 })
   }
 
-  const resend = new Resend(process.env.RESEND_API_KEY)
-  let sent = 0
+  let emailSent = 0
+  let whatsappSent = 0
 
-  for (const lawyer of lawyers) {
-    if (!lawyer.email) continue
-    try {
-      await resend.emails.send({
-        from: 'vakil.bio <noreply@vakil.bio>',
-        to: lawyer.email,
-        subject: 'Get your Verified badge on vakil.bio ✦',
-        html: verificationEmail(lawyer.full_name),
-      })
-      sent++
-    } catch (e) {
-      console.error(`Failed to send to ${lawyer.email}:`, e)
+  // Send emails via Resend
+  if (process.env.RESEND_API_KEY) {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    for (const lawyer of lawyers) {
+      if (!lawyer.email) continue
+      try {
+        await resend.emails.send({
+          from: 'vakil.bio <noreply@vakil.bio>',
+          to: lawyer.email,
+          subject: 'Get your Verified badge on vakil.bio ✦',
+          html: verificationEmail(lawyer.full_name),
+        })
+        emailSent++
+      } catch (e) {
+        console.error(`Email failed for ${lawyer.email}:`, e)
+      }
     }
   }
 
-  return Response.json({ sent, total: lawyers.length })
+  // Send WhatsApp via Twilio
+  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_WHATSAPP_FROM) {
+    const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+    for (const lawyer of lawyers) {
+      if (!lawyer.phone) continue
+      const to = lawyer.phone.startsWith('+') ? lawyer.phone : `+${lawyer.phone}`
+      try {
+        await client.messages.create({
+          from: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM}`,
+          to: `whatsapp:${to}`,
+          body: whatsappMessage(lawyer.full_name),
+        })
+        whatsappSent++
+      } catch (e) {
+        console.error(`WhatsApp failed for ${to}:`, e)
+      }
+    }
+  }
+
+  return Response.json({ emailSent, whatsappSent, total: lawyers.length })
 }

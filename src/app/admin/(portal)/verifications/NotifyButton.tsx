@@ -5,7 +5,7 @@ import { Send, Loader2, CheckCircle } from 'lucide-react'
 
 export function NotifyButton({ unverifiedCount }: { unverifiedCount: number }) {
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<{ sent: number; total: number } | null>(null)
+  const [result, setResult] = useState<{ emailSent: number; whatsappSent: number; total: number } | null>(null)
   const [error, setError] = useState('')
 
   async function handleSend() {
@@ -28,7 +28,7 @@ export function NotifyButton({ unverifiedCount }: { unverifiedCount: number }) {
       <div className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl"
         style={{ background: 'rgba(5,150,105,0.08)', color: '#059669', border: '1px solid rgba(5,150,105,0.2)' }}>
         <CheckCircle className="w-4 h-4" />
-        Sent to {result.sent} of {result.total} lawyers
+        {result.emailSent} emails · {result.whatsappSent} WhatsApp sent
       </div>
     )
   }
