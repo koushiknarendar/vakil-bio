@@ -1,7 +1,10 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { BadgeCheck } from 'lucide-react'
+import {
+  LayoutDashboard, CalendarCheck, CalendarDays,
+  Users, User, Briefcase, Clock, BadgeCheck, Building2,
+} from 'lucide-react'
 import { DashboardNotifications } from './DashboardNotifications'
 import { MobileSidebar } from './MobileSidebar'
 import { createClient } from '@/lib/supabase/server'
