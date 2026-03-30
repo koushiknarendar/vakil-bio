@@ -28,10 +28,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   // Validate and check slug uniqueness if changed
   let slug: string | undefined
   if (rawSlug) {
-    slug = rawSlug.toLowerCase().trim().replace(/[^a-z0-9-]/g, '').slice(0, 60)
-    if (slug.length < 3) return Response.json({ error: 'Handle must be at least 3 characters' }, { status: 400 })
-    const { data: existing } = await supabase.from('companies').select('id').eq('slug', slug).neq('id', id).single()
+    const cleaned = rawSlug.toLowerCase().trim().replace(/[^a-z0-9-]/g, '').slice(0, 60)
+    if (cleaned.length < 3) return Response.json({ error: 'Handle must be at least 3 characters' }, { status: 400 })
+    const { data: existing } = await supabase.from('companies').select('id').eq('slug', cleaned).neq('id', id).single()
     if (existing) return Response.json({ error: 'This handle is already taken' }, { status: 400 })
+    slug = cleaned
   }
 
   const { data: company, error } = await supabase
