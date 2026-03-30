@@ -157,9 +157,9 @@ export default function CompanyPage() {
     init()
   }, [])
 
-  // Slug availability check — depends on [slug] only, skips when editing existing firm
+  // Slug availability check — skip if unchanged from saved value
   useEffect(() => {
-    if (company) return // don't check when editing existing firm
+    if (slug === company?.slug) { setSlugAvailable(null); return }
     if (!slug || slug.length < 3) { setSlugAvailable(null); return }
     const timer = setTimeout(async () => {
       setCheckingSlug(true)
@@ -418,47 +418,36 @@ export default function CompanyPage() {
 
         <div>
           <Label>Firm Handle *</Label>
-          {company ? (
-            // Read-only after creation
+          <>
             <div className="flex items-center w-full overflow-hidden">
               <div style={{ display: 'flex', alignItems: 'center', padding: '0 10px', height: '42px', background: 'var(--bg-surface)', border: '1px solid rgba(15,23,42,0.15)', borderRight: 'none', borderRadius: '12px 0 0 12px', color: 'var(--text-muted)', fontSize: '13px', flexShrink: 0, whiteSpace: 'nowrap' }}>
                 vakil.bio/firm/
               </div>
-              <input value={slug} readOnly
-                style={{ ...inputSt, borderRadius: '0 12px 12px 0', background: 'var(--bg-surface)', color: 'var(--text-muted)', cursor: 'not-allowed', minWidth: 0 }} />
-            </div>
-          ) : (
-            // Editable at creation with availability check
-            <>
-              <div className="flex items-center w-full overflow-hidden">
-                <div style={{ display: 'flex', alignItems: 'center', padding: '0 10px', height: '42px', background: 'var(--bg-surface)', border: '1px solid rgba(15,23,42,0.15)', borderRight: 'none', borderRadius: '12px 0 0 12px', color: 'var(--text-muted)', fontSize: '13px', flexShrink: 0, whiteSpace: 'nowrap' }}>
-                  vakil.bio/firm/
-                </div>
-                <div className="relative flex-1">
-                  <input
-                    value={slug}
-                    onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 50))}
-                    placeholder="sharma-associates"
-                    style={{ ...inputSt, borderRadius: '0 12px 12px 0', paddingRight: '36px' }}
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {checkingSlug && <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--text-muted)' }} />}
-                    {!checkingSlug && slugAvailable === true && <CheckCircle className="w-4 h-4" style={{ color: '#059669' }} />}
-                    {!checkingSlug && slugAvailable === false && <AlertCircle className="w-4 h-4" style={{ color: '#DC2626' }} />}
-                  </div>
+              <div className="relative flex-1 min-w-0">
+                <input
+                  value={slug}
+                  onChange={e => (isAdmin || !company) && setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 50))}
+                  placeholder="sharma-associates"
+                  readOnly={!isAdmin && !!company}
+                  style={{ ...inputSt, borderRadius: '0 12px 12px 0', paddingRight: '36px', minWidth: 0, background: (!isAdmin && !!company) ? 'var(--bg-surface)' : '#fff' }}
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {checkingSlug && <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--text-muted)' }} />}
+                  {!checkingSlug && slugAvailable === true && <CheckCircle className="w-4 h-4" style={{ color: '#059669' }} />}
+                  {!checkingSlug && slugAvailable === false && <AlertCircle className="w-4 h-4" style={{ color: '#DC2626' }} />}
                 </div>
               </div>
-              {slugAvailable === true && slug.length >= 3 && (
-                <p className="text-xs mt-1" style={{ color: '#059669' }}>✓ vakil.bio/firm/{slug} is available</p>
-              )}
-              {slugAvailable === false && (
-                <p className="text-xs mt-1" style={{ color: '#DC2626' }}>This handle is already taken. Try another.</p>
-              )}
-              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                Lowercase letters, numbers and hyphens only. Can&apos;t be changed later.
-              </p>
-            </>
-          )}
+            </div>
+            {slugAvailable === true && slug.length >= 3 && (
+              <p className="text-xs mt-1" style={{ color: '#059669' }}>✓ vakil.bio/firm/{slug} is available</p>
+            )}
+            {slugAvailable === false && (
+              <p className="text-xs mt-1" style={{ color: '#DC2626' }}>This handle is already taken. Try another.</p>
+            )}
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+              Lowercase letters, numbers and hyphens only.
+            </p>
+          </>
         </div>
 
         <div>
@@ -562,7 +551,7 @@ export default function CompanyPage() {
               </span>
             )}
           </div>
-          <button onClick={handleSave} disabled={saving || !name.trim() || (!company && slugAvailable !== true)}
+          <button onClick={handleSave} disabled={saving || !name.trim() || (!company && slugAvailable !== true) || (!!company && slug !== company.slug && slugAvailable !== true)}
             className="flex items-center justify-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl disabled:opacity-50 w-full sm:w-auto"
             style={{ background: 'var(--blue)', color: '#fff' }}>
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}

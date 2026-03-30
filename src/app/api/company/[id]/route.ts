@@ -23,12 +23,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const body = await req.json()
-  const { name, tagline, about, website, email, phone, location, practice_areas, founded_year, team_size, logo_url } = body
+  const { name, slug: rawSlug, tagline, about, website, email, phone, location, practice_areas, founded_year, team_size, logo_url } = body
+
+  // Validate and check slug uniqueness if changed
+  let slug: string | undefined
+  if (rawSlug) {
+    slug = rawSlug.toLowerCase().trim().replace(/[^a-z0-9-]/g, '').slice(0, 60)
+    if (slug.length < 3) return Response.json({ error: 'Handle must be at least 3 characters' }, { status: 400 })
+    const { data: existing } = await supabase.from('companies').select('id').eq('slug', slug).neq('id', id).single()
+    if (existing) return Response.json({ error: 'This handle is already taken' }, { status: 400 })
+  }
 
   const { data: company, error } = await supabase
     .from('companies')
     .update({
       name: name?.trim(),
+      ...(slug && { slug }),
       tagline: tagline?.trim() || null,
       about: about?.trim() || null,
       website: website?.trim() || null,
