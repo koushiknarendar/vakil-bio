@@ -1,18 +1,9 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import {
-  LayoutDashboard,
-  CalendarCheck,
-  CalendarDays,
-  Users,
-  User,
-  Briefcase,
-  Clock,
-  BadgeCheck,
-  Building2,
-} from 'lucide-react'
+import { BadgeCheck } from 'lucide-react'
 import { DashboardNotifications } from './DashboardNotifications'
+import { MobileSidebar } from './MobileSidebar'
 import { createClient } from '@/lib/supabase/server'
 
 const navItems = [
@@ -160,17 +151,12 @@ export default async function DashboardLayout({
         {/* Top bar */}
         <header className="h-16 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30"
           style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)' }}>
-          {/* Mobile logo */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <Image
-              src="/logo.png"
-              alt="vakil.bio"
-              width={110}
-              height={28}
-              className="h-7 w-auto object-contain"
-              style={{ mixBlendMode: 'multiply' }}
-            />
-          </div>
+          <MobileSidebar
+            lawyer={lawyer}
+            initials={initials}
+            lawyerIsVerified={!!lawyerIsVerified}
+            daysLeft={daysLeft}
+          />
 
           <div className="hidden lg:block" />
 
@@ -193,21 +179,6 @@ export default async function DashboardLayout({
         <main className="flex-1 p-4 sm:p-6">{children}</main>
       </div>
 
-      {/* Bottom nav - Mobile */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around px-2 h-16"
-        style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)', borderTop: '1px solid var(--border)' }}>
-        {navItems.filter(item => !('mobileHide' in item && item.mobileHide)).map(({ href, icon: Icon, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className="flex flex-col items-center gap-1 py-1 px-2 transition-colors"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            <Icon className="w-5 h-5" />
-            <span className="text-[10px]">{label}</span>
-          </Link>
-        ))}
-      </nav>
     </div>
   )
 }
