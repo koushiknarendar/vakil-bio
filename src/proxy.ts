@@ -6,18 +6,15 @@ const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placehol
 
 const normalize = (p: string) => p.replace(/^\+/, '')
 
+function isAdminUser(user: { phone?: string | null } | null) {
+  if (!user) return false
+  const adminPhones = (process.env.ADMIN_PHONES || '').split(',').map(p => normalize(p.trim()))
+  return adminPhones.includes(normalize(user.phone ?? ''))
+}
+
 export async function proxy(request: NextRequest) {
   const hostname = request.headers.get('x-forwarded-host') || request.headers.get('host') || ''
   const isManage = hostname.startsWith('manage.')
-
-  // Rewrite manage.vakil.bio → /admin/*
-  if (isManage) {
-    const { pathname } = request.nextUrl
-    if (!pathname.startsWith('/admin') && !pathname.startsWith('/api') && !pathname.startsWith('/_next')) {
-      const target = pathname === '/' ? '/admin/sign-in' : `/admin${pathname}`
-      return NextResponse.rewrite(new URL(target, request.url))
-    }
-  }
 
   let supabaseResponse = NextResponse.next({ request })
 
@@ -42,6 +39,20 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
+  // ── manage.vakil.bio subdomain ──────────────────────────────────────────
+  // Rewrite root URL to the right admin page; all other paths pass through
+  if (isManage) {
+    const { pathname } = request.nextUrl
+    if (pathname === '/') {
+      const target = isAdminUser(user) ? '/admin' : '/admin/sign-in'
+      return NextResponse.rewrite(new URL(target, request.url))
+    }
+    // /admin/*, /api/*, /_next/*, and any other path — pass through
+    return supabaseResponse
+  }
+
+  // ── Main site ────────────────────────────────────────────────────────────
+
   // Protect dashboard routes
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
     if (!user) {
@@ -52,16 +63,12 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Protect admin routes (except sign-in)
+  // Protect admin routes on main site (except sign-in)
   if (
     request.nextUrl.pathname.startsWith('/admin') &&
     !request.nextUrl.pathname.startsWith('/admin/sign-in')
   ) {
-    if (!user) {
-      return NextResponse.redirect(new URL('/admin/sign-in', request.url))
-    }
-    const adminPhones = (process.env.ADMIN_PHONES || '').split(',').map(p => normalize(p.trim()))
-    if (!adminPhones.includes(normalize(user.phone ?? ''))) {
+    if (!isAdminUser(user)) {
       return NextResponse.redirect(new URL('/admin/sign-in', request.url))
     }
   }

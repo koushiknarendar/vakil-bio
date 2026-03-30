@@ -48,7 +48,7 @@ export default function AdminSignInPage() {
     setLoading(true)
     const { data, error } = await supabase.auth.verifyOtp({ phone: `+91${phone}`, token: otp, type: 'sms' })
     if (error) { setLoading(false); setError(error.message); return }
-    if (data.user) router.push('/admin')
+    if (data.user) router.push('/')
     setLoading(false)
   }
 
