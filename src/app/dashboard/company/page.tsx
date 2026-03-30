@@ -30,7 +30,7 @@ const inputSt: React.CSSProperties = {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="glass rounded-2xl p-6 space-y-4">
+    <div className="glass rounded-2xl p-4 sm:p-6 space-y-4 w-full min-w-0">
       <h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{title}</h2>
       {children}
     </div>
@@ -357,17 +357,17 @@ export default function CompanyPage() {
 
       {/* Stats cards (only when firm exists) */}
       {company && (
-        <div className="grid grid-cols-3 gap-3">
-          <div className="glass rounded-xl p-4 text-center">
-            <div className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{members.length}</div>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="glass rounded-xl p-3 text-center">
+            <div className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{members.length}</div>
             <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Members</div>
           </div>
-          <div className="glass rounded-xl p-4 text-center">
-            <div className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{practiceAreas.length}</div>
-            <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Practice Areas</div>
+          <div className="glass rounded-xl p-3 text-center">
+            <div className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{practiceAreas.length}</div>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Areas</div>
           </div>
-          <div className="glass rounded-xl p-4 text-center">
-            <div className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{foundedYear || '—'}</div>
+          <div className="glass rounded-xl p-3 text-center">
+            <div className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{foundedYear || '—'}</div>
             <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Founded</div>
           </div>
         </div>
@@ -529,7 +529,7 @@ export default function CompanyPage() {
 
       {/* Details */}
       <Card title="Details">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Label><span className="flex items-center gap-1.5"><Calendar className="w-3 h-3" />Founded Year</span></Label>
             <input type="number" value={foundedYear} onChange={e => setFoundedYear(e.target.value)}

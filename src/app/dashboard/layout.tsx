@@ -150,7 +150,7 @@ export default async function DashboardLayout({
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 lg:ml-60 flex flex-col min-h-screen">
+      <div className="flex-1 lg:ml-60 flex flex-col min-h-screen min-w-0 w-full">
         {/* Top bar */}
         <header className="h-16 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30"
           style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)' }}>
