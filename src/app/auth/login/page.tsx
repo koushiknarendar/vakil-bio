@@ -32,7 +32,7 @@ export default function LoginPage() {
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    if (otp.length !== 6) { setError('Please enter the 6-digit OTP'); return }
+    if (otp.length < 6) { setError('Please enter the full OTP code'); return }
     setLoading(true)
     const { data, error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'email' })
     if (error) { setLoading(false); setError(error.message); return }
@@ -140,14 +140,14 @@ export default function LoginPage() {
               <form onSubmit={handleVerifyOTP} className="space-y-4">
                 <div>
                   <label className="text-sm font-medium block mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                    6-digit code
+                    Login code
                   </label>
                   <input
                     type="text"
                     inputMode="numeric"
                     placeholder="• • • • • •"
                     value={otp}
-                    onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 8))}
                     style={{ ...inputStyle, textAlign: 'center', fontSize: '24px', letterSpacing: '0.4em', padding: '12px 16px', fontFamily: 'monospace' }}
                     required
                     autoFocus
