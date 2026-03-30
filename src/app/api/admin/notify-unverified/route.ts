@@ -47,8 +47,9 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await authSupabase.auth.getUser()
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const adminPhones = (process.env.ADMIN_PHONES || '').split(',').map(p => p.trim())
-  if (!adminPhones.includes(user.phone ?? '')) {
+  const normalize = (p: string) => p.replace(/^\+/, '')
+  const adminPhones = (process.env.ADMIN_PHONES || '').split(',').map(p => normalize(p.trim()))
+  if (!adminPhones.includes(normalize(user.phone ?? ''))) {
     return Response.json({ error: 'Forbidden' }, { status: 403 })
   }
 

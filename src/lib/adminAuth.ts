@@ -6,8 +6,9 @@ export async function requireAdmin() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/admin/sign-in')
 
-  const adminPhones = (process.env.ADMIN_PHONES || '').split(',').map(p => p.trim())
-  if (!adminPhones.includes(user.phone ?? '')) redirect('/admin/sign-in')
+  const normalize = (p: string) => p.replace(/^\+/, '')
+  const adminPhones = (process.env.ADMIN_PHONES || '').split(',').map(p => normalize(p.trim()))
+  if (!adminPhones.includes(normalize(user.phone ?? ''))) redirect('/admin/sign-in')
 
   return user
 }
