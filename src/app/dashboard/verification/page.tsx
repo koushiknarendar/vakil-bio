@@ -228,7 +228,7 @@ export default function VerificationPage() {
   // ── APPROVED — awaiting payment ───────────────────────────────────
   if (verificationStatus === 'approved') {
     return (
-      <div className="max-w-2xl mx-auto space-y-5 pb-20 lg:pb-6">
+      <div className="max-w-2xl mx-auto space-y-5 pb-6">
         <PageHeader verifiedCount={verifiedCount} />
         <div className="glass rounded-2xl p-5 flex items-start gap-4"
           style={{ border: '1px solid rgba(16,185,129,0.25)', background: 'rgba(16,185,129,0.05)' }}>
@@ -248,7 +248,7 @@ export default function VerificationPage() {
   // ── PENDING ───────────────────────────────────────────────────────
   if (verificationStatus === 'pending' || submitSuccess) {
     return (
-      <div className="max-w-2xl mx-auto space-y-5 pb-20 lg:pb-6">
+      <div className="max-w-2xl mx-auto space-y-5 pb-6">
         <PageHeader verifiedCount={verifiedCount} />
         <div className="glass rounded-2xl p-6 text-center space-y-3">
           <div className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center"
@@ -277,7 +277,7 @@ export default function VerificationPage() {
   // ── REJECTED ──────────────────────────────────────────────────────
   if (verificationStatus === 'rejected') {
     return (
-      <div className="max-w-2xl mx-auto space-y-5 pb-20 lg:pb-6">
+      <div className="max-w-2xl mx-auto space-y-5 pb-6">
         <PageHeader verifiedCount={verifiedCount} />
         <div className="glass rounded-2xl p-5 flex items-start gap-4"
           style={{ border: '1px solid rgba(220,38,38,0.2)', background: 'rgba(220,38,38,0.04)' }}>
@@ -308,7 +308,7 @@ export default function VerificationPage() {
 
   // ── NOT APPLIED ───────────────────────────────────────────────────
   return (
-    <div className="max-w-2xl mx-auto space-y-5 pb-20 lg:pb-6">
+    <div className="max-w-2xl mx-auto space-y-5 pb-6">
       <PageHeader verifiedCount={verifiedCount} />
       <ApplicationForm
         vType={vType} setVType={setVType}
@@ -329,8 +329,8 @@ export default function VerificationPage() {
 
 function PageHeader({ verifiedCount }: { verifiedCount: number }) {
   return (
-    <div className="flex items-start justify-between">
-      <div>
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0 flex-1">
         <h1 className="font-heading text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Get Verified</h1>
         <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
           Prove your credentials. Build instant client trust.
@@ -557,9 +557,9 @@ function ActiveView({ lawyer, verifiedCount, onRenew }: { lawyer: LawyerData; ve
     : 0
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 pb-20 lg:pb-6">
-      <div className="flex items-start justify-between">
-        <div>
+    <div className="max-w-2xl mx-auto space-y-5 pb-6">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <h1 className="font-heading text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Verification</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>Your profile is verified</p>
         </div>

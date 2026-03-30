@@ -154,7 +154,7 @@ export default function ServicesPage() {
   const otherServices = services.filter(s => s.type !== 'consultation')
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 pb-20 lg:pb-6">
+    <div className="max-w-2xl mx-auto space-y-5 pb-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div>
