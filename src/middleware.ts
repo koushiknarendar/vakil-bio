@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(req: NextRequest) {
-  const hostname = req.headers.get('host') || ''
+  const hostname = req.headers.get('x-forwarded-host') || req.headers.get('host') || ''
   const isManage = hostname.startsWith('manage.')
 
   if (isManage) {
