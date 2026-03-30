@@ -3,19 +3,17 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Phone, ArrowRight, ChevronLeft, ShieldCheck } from 'lucide-react'
+import { Mail, ArrowRight, ChevronLeft, ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function AdminSignInPage() {
   const supabase = createClient()
 
-  const [step, setStep] = useState<'phone' | 'otp'>('phone')
-  const [phone, setPhone] = useState('')
+  const [step, setStep] = useState<'email' | 'otp'>('email')
+  const [email, setEmail] = useState('')
   const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-
-  const formatPhone = (value: string) => value.replace(/\D/g, '').slice(0, 10)
 
   const inputStyle: React.CSSProperties = {
     background: '#fff',
@@ -23,7 +21,7 @@ export default function AdminSignInPage() {
     color: '#0F172A',
     borderRadius: '12px',
     padding: '10px 16px',
-    fontSize: '14px',
+    fontSize: '16px',
     outline: 'none',
     width: '100%',
   }
@@ -31,9 +29,8 @@ export default function AdminSignInPage() {
   async function handleSendOTP(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    if (phone.length !== 10) { setError('Enter a valid 10-digit number'); return }
     setLoading(true)
-    const { error } = await supabase.auth.signInWithOtp({ phone: `+91${phone}` })
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } })
     setLoading(false)
     if (error) { setError(error.message); return }
     setStep('otp')
@@ -42,9 +39,9 @@ export default function AdminSignInPage() {
   async function handleVerifyOTP(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    if (otp.length !== 6) { setError('Enter the 6-digit OTP'); return }
+    if (otp.length < 6) { setError('Enter the full OTP code'); return }
     setLoading(true)
-    const { error } = await supabase.auth.verifyOtp({ phone: `+91${phone}`, token: otp, type: 'sms' })
+    const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'email' })
     if (error) { setLoading(false); setError(error.message); return }
     window.location.href = '/'
   }
@@ -52,7 +49,6 @@ export default function AdminSignInPage() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', fontFamily: 'sans-serif' }}>
       <div style={{ width: '100%', maxWidth: '380px', margin: '0 24px' }}>
-        {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <Link href="/">
             <Image src="/logo.png" alt="vakil.bio" width={120} height={32}
@@ -65,23 +61,21 @@ export default function AdminSignInPage() {
         </div>
 
         <div style={{ background: '#fff', borderRadius: '20px', padding: '32px', border: '1px solid #E2E8F0', boxShadow: '0 2px 12px rgba(15,23,42,0.06)' }}>
-          {step === 'phone' ? (
+          {step === 'email' ? (
             <>
               <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>Admin Sign In</h1>
-              <p style={{ fontSize: '13px', color: '#64748B', margin: '0 0 24px' }}>Enter your admin phone number</p>
+              <p style={{ fontSize: '13px', color: '#64748B', margin: '0 0 24px' }}>Enter your admin email address</p>
 
               <form onSubmit={handleSendOTP} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#475569', marginBottom: '6px' }}>
-                    Mobile Number
+                    Email Address
                   </label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '0 12px', borderRadius: '12px', border: '1px solid rgba(15,23,42,0.15)', background: '#F8FAFC', color: '#64748B', fontSize: '13px', flexShrink: 0 }}>
-                      <Phone style={{ width: '13px', height: '13px' }} /> +91
-                    </div>
-                    <input type="tel" inputMode="numeric" placeholder="98765 43210"
-                      value={phone} onChange={e => setPhone(formatPhone(e.target.value))}
-                      style={inputStyle} autoFocus required />
+                  <div style={{ position: 'relative' }}>
+                    <Mail style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '15px', height: '15px', color: '#94A3B8' }} />
+                    <input type="email" placeholder="admin@example.com"
+                      value={email} onChange={e => setEmail(e.target.value)}
+                      style={{ ...inputStyle, paddingLeft: '36px' }} autoFocus required />
                   </div>
                 </div>
 
@@ -95,16 +89,16 @@ export default function AdminSignInPage() {
             </>
           ) : (
             <>
-              <button onClick={() => { setStep('phone'); setOtp(''); setError('') }}
+              <button onClick={() => { setStep('email'); setOtp(''); setError('') }}
                 style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#64748B', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: '16px' }}>
                 <ChevronLeft style={{ width: '14px', height: '14px' }} /> Back
               </button>
-              <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>Enter OTP</h1>
-              <p style={{ fontSize: '13px', color: '#64748B', margin: '0 0 24px' }}>Sent to +91 {phone}</p>
+              <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>Check your email</h1>
+              <p style={{ fontSize: '13px', color: '#64748B', margin: '0 0 24px' }}>We sent a code to {email}</p>
 
               <form onSubmit={handleVerifyOTP} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <input type="tel" inputMode="numeric" placeholder="• • • • • •"
-                  value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                <input type="text" inputMode="numeric" placeholder="• • • • • •"
+                  value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 8))}
                   style={{ ...inputStyle, textAlign: 'center', fontSize: '24px', letterSpacing: '0.5em', padding: '12px 16px', fontFamily: 'monospace' }}
                   autoFocus required />
 
