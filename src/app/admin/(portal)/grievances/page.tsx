@@ -105,7 +105,6 @@ export default async function AdminGrievancesPage() {
           <div className="py-16 text-center" style={{ color: 'var(--text-muted)' }}>No grievances yet</div>
         )}
       </div>
-      </div>
     </div>
   )
 }
