@@ -333,11 +333,11 @@ export default function CompanyPage() {
     <div className="max-w-2xl mx-auto space-y-5 lg:pb-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="font-heading text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
             {company ? 'Firm Profile' : 'Create Firm'}
           </h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-sm mt-0.5 truncate" style={{ color: 'var(--text-secondary)' }}>
             {company
               ? <>Public page at <a href={`/firm/${company.slug}`} target="_blank" className="underline" style={{ color: 'var(--blue)' }}>/firm/{company.slug}</a></>
               : 'Create a public page for your law firm or chambers'}
@@ -420,18 +420,18 @@ export default function CompanyPage() {
           <Label>Firm Handle *</Label>
           {company ? (
             // Read-only after creation
-            <div className="flex items-center">
-              <div style={{ display: 'flex', alignItems: 'center', padding: '0 12px', height: '42px', background: 'var(--bg-surface)', border: '1px solid rgba(15,23,42,0.15)', borderRight: 'none', borderRadius: '12px 0 0 12px', color: 'var(--text-muted)', fontSize: '14px', flexShrink: 0 }}>
+            <div className="flex items-center w-full overflow-hidden">
+              <div style={{ display: 'flex', alignItems: 'center', padding: '0 10px', height: '42px', background: 'var(--bg-surface)', border: '1px solid rgba(15,23,42,0.15)', borderRight: 'none', borderRadius: '12px 0 0 12px', color: 'var(--text-muted)', fontSize: '13px', flexShrink: 0, whiteSpace: 'nowrap' }}>
                 vakil.bio/firm/
               </div>
               <input value={slug} readOnly
-                style={{ ...inputSt, borderRadius: '0 12px 12px 0', background: 'var(--bg-surface)', color: 'var(--text-muted)', cursor: 'not-allowed' }} />
+                style={{ ...inputSt, borderRadius: '0 12px 12px 0', background: 'var(--bg-surface)', color: 'var(--text-muted)', cursor: 'not-allowed', minWidth: 0 }} />
             </div>
           ) : (
             // Editable at creation with availability check
             <>
-              <div className="flex items-center">
-                <div style={{ display: 'flex', alignItems: 'center', padding: '0 12px', height: '42px', background: 'var(--bg-surface)', border: '1px solid rgba(15,23,42,0.15)', borderRight: 'none', borderRadius: '12px 0 0 12px', color: 'var(--text-muted)', fontSize: '14px', flexShrink: 0 }}>
+              <div className="flex items-center w-full overflow-hidden">
+                <div style={{ display: 'flex', alignItems: 'center', padding: '0 10px', height: '42px', background: 'var(--bg-surface)', border: '1px solid rgba(15,23,42,0.15)', borderRight: 'none', borderRadius: '12px 0 0 12px', color: 'var(--text-muted)', fontSize: '13px', flexShrink: 0, whiteSpace: 'nowrap' }}>
                   vakil.bio/firm/
                 </div>
                 <div className="relative flex-1">
