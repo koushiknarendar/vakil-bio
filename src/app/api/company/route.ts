@@ -55,14 +55,16 @@ export async function POST(req: NextRequest) {
   if (existing) return Response.json({ error: 'Already in a company' }, { status: 400 })
 
   const body = await req.json()
-  const { name, tagline, about, website, email, phone, location, practice_areas, founded_year, team_size } = body
+  const { name, slug: rawSlug, tagline, about, website, email, phone, location, practice_areas, founded_year, team_size } = body
 
   if (!name?.trim()) return Response.json({ error: 'Name is required' }, { status: 400 })
+  if (!rawSlug?.trim()) return Response.json({ error: 'Firm handle is required' }, { status: 400 })
 
-  // Generate unique slug
-  let slug = slugify(name)
+  const slug = slugify(rawSlug)
+  if (slug.length < 3) return Response.json({ error: 'Handle must be at least 3 characters' }, { status: 400 })
+
   const { data: existing_slug } = await supabase.from('companies').select('id').eq('slug', slug).single()
-  if (existing_slug) slug = `${slug}-${Date.now().toString(36)}`
+  if (existing_slug) return Response.json({ error: 'This handle is already taken' }, { status: 400 })
 
   const { data: company, error } = await supabase
     .from('companies')

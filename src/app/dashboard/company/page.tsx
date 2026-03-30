@@ -88,6 +88,9 @@ export default function CompanyPage() {
 
   // Form state
   const [name, setName] = useState('')
+  const [slug, setSlug] = useState('')
+  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null)
+  const [checkingSlug, setCheckingSlug] = useState(false)
   const [tagline, setTagline] = useState('')
   const [about, setAbout] = useState('')
   const [website, setWebsite] = useState('')
@@ -153,8 +156,22 @@ export default function CompanyPage() {
     init()
   }, [])
 
+  // Slug availability check
+  useEffect(() => {
+    if (company) return // don't check when editing existing firm
+    if (!slug || slug.length < 3) { setSlugAvailable(null); return }
+    const timer = setTimeout(async () => {
+      setCheckingSlug(true)
+      const { data } = await supabase.from('companies').select('id').eq('slug', slug).single()
+      setSlugAvailable(!data)
+      setCheckingSlug(false)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [slug, company])
+
   function populateForm(c: Company) {
     setName(c.name || '')
+    setSlug(c.slug || '')
     setTagline(c.tagline || '')
     setAbout(c.about || '')
     setWebsite(c.website || '')
@@ -191,7 +208,7 @@ export default function CompanyPage() {
     setSaveStatus('idle')
     setSaveError('')
 
-    const body = { name, tagline, about, website, email, phone, location, practice_areas: practiceAreas, founded_year: foundedYear, team_size: teamSize }
+    const body = { name, slug, tagline, about, website, email, phone, location, practice_areas: practiceAreas, founded_year: foundedYear, team_size: teamSize }
 
     try {
       if (company) {
@@ -354,6 +371,52 @@ export default function CompanyPage() {
           <input value={name} onChange={e => setName(e.target.value)}
             placeholder="e.g. Sharma & Associates" style={inputSt} disabled={!isAdmin && !!company} />
         </div>
+
+        <div>
+          <Label>Firm Handle *</Label>
+          {company ? (
+            // Read-only after creation
+            <div className="flex items-center">
+              <div style={{ display: 'flex', alignItems: 'center', padding: '0 12px', height: '42px', background: 'var(--bg-surface)', border: '1px solid rgba(15,23,42,0.15)', borderRight: 'none', borderRadius: '12px 0 0 12px', color: 'var(--text-muted)', fontSize: '14px', flexShrink: 0 }}>
+                vakil.bio/firm/
+              </div>
+              <input value={slug} readOnly
+                style={{ ...inputSt, borderRadius: '0 12px 12px 0', background: 'var(--bg-surface)', color: 'var(--text-muted)', cursor: 'not-allowed' }} />
+            </div>
+          ) : (
+            // Editable at creation with availability check
+            <>
+              <div className="flex items-center">
+                <div style={{ display: 'flex', alignItems: 'center', padding: '0 12px', height: '42px', background: 'var(--bg-surface)', border: '1px solid rgba(15,23,42,0.15)', borderRight: 'none', borderRadius: '12px 0 0 12px', color: 'var(--text-muted)', fontSize: '14px', flexShrink: 0 }}>
+                  vakil.bio/firm/
+                </div>
+                <div className="relative flex-1">
+                  <input
+                    value={slug}
+                    onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 50))}
+                    placeholder="sharma-associates"
+                    style={{ ...inputSt, borderRadius: '0 12px 12px 0', paddingRight: '36px' }}
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {checkingSlug && <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--text-muted)' }} />}
+                    {!checkingSlug && slugAvailable === true && <CheckCircle className="w-4 h-4" style={{ color: '#059669' }} />}
+                    {!checkingSlug && slugAvailable === false && <AlertCircle className="w-4 h-4" style={{ color: '#DC2626' }} />}
+                  </div>
+                </div>
+              </div>
+              {slugAvailable === true && slug.length >= 3 && (
+                <p className="text-xs mt-1" style={{ color: '#059669' }}>✓ vakil.bio/firm/{slug} is available</p>
+              )}
+              {slugAvailable === false && (
+                <p className="text-xs mt-1" style={{ color: '#DC2626' }}>This handle is already taken. Try another.</p>
+              )}
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                Lowercase letters, numbers and hyphens only. Can't be changed later.
+              </p>
+            </>
+          )}
+        </div>
+
         <div>
           <Label>Tagline</Label>
           <input value={tagline} onChange={e => setTagline(e.target.value)}
@@ -453,7 +516,7 @@ export default function CompanyPage() {
               </span>
             )}
           </div>
-          <button onClick={handleSave} disabled={saving || !name.trim()}
+          <button onClick={handleSave} disabled={saving || !name.trim() || (!company && slugAvailable !== true)}
             className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl disabled:opacity-50"
             style={{ background: 'var(--blue)', color: '#fff' }}>
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
