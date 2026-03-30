@@ -14,6 +14,7 @@ const inputSt: React.CSSProperties = {
 export default function GrievancePage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [subject, setSubject] = useState('')
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
@@ -28,7 +29,7 @@ export default function GrievancePage() {
       const res = await fetch('/api/grievances', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, subject, description }),
+        body: JSON.stringify({ name, email, phone, subject, description }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Submission failed')
@@ -78,6 +79,10 @@ export default function GrievancePage() {
                 <div>
                   <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(15,23,42,0.55)' }}>Email *</label>
                   <input type="email" value={email} onChange={e => setEmail(e.target.value)} required style={inputSt} placeholder="your@email.com" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(15,23,42,0.55)' }}>Phone Number *</label>
+                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required style={inputSt} placeholder="+91 98765 43210" />
                 </div>
               </div>
 

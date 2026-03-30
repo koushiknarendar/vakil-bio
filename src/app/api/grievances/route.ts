@@ -6,14 +6,14 @@ function getServiceSupabase() {
 }
 
 export async function POST(req: NextRequest) {
-  const { name, email, subject, description } = await req.json()
+  const { name, email, phone, subject, description } = await req.json()
 
-  if (!name || !email || !subject || !description) {
+  if (!name || !email || !phone || !subject || !description) {
     return Response.json({ error: 'All fields are required' }, { status: 400 })
   }
 
   const supabase = getServiceSupabase()
-  const { error } = await supabase.from('grievances').insert({ name, email, subject, description, status: 'open' })
+  const { error } = await supabase.from('grievances').insert({ name, email, phone, subject, description, status: 'open' })
 
   if (error) {
     console.error('Grievance insert error:', error)
