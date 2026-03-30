@@ -357,7 +357,11 @@ export default function CompanyPage() {
 
       {/* Stats cards (only when firm exists) */}
       {company && (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="glass rounded-xl p-3 text-center">
+            <div className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{(company as unknown as { view_count?: number }).view_count ?? 0}</div>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Page Views</div>
+          </div>
           <div className="glass rounded-xl p-3 text-center">
             <div className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{members.length}</div>
             <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Members</div>

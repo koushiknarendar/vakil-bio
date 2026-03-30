@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { BadgeCheck, MapPin, Globe, Mail, Phone, Calendar, Users, Building2 } from 'lucide-react'
 import { Footer } from '@/components/Footer'
+import { FirmViewTracker } from '@/components/FirmViewTracker'
 
 function getSupabase() {
   return createServiceClient(
@@ -97,6 +98,7 @@ export default async function FirmPage({ params }: Props) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }} />
+      <FirmViewTracker companyId={company.id} />
 
       <div className="min-h-screen" style={{ background: '#F4F6FB' }}>
         {/* Nav */}
