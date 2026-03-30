@@ -4,10 +4,10 @@ import { LayoutDashboard, Users, MessageSquare, BadgeCheck } from 'lucide-react'
 import { AdminSignOut } from './AdminSignOut'
 
 const NAV = [
-  { href: '/admin', label: 'Overview', icon: LayoutDashboard },
-  { href: '/admin/lawyers', label: 'Lawyers', icon: Users },
-  { href: '/admin/verifications', label: 'Verifications', icon: BadgeCheck },
-  { href: '/admin/grievances', label: 'Grievances', icon: MessageSquare },
+  { href: '/', label: 'Overview', icon: LayoutDashboard },
+  { href: '/lawyers', label: 'Lawyers', icon: Users },
+  { href: '/verifications', label: 'Verifications', icon: BadgeCheck },
+  { href: '/grievances', label: 'Grievances', icon: MessageSquare },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

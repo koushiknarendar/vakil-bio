@@ -39,16 +39,28 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // ── manage.vakil.bio subdomain ──────────────────────────────────────────
-  // Rewrite root URL to the right admin page; all other paths pass through
+  // ── manage subdomain: clean URLs → /admin/* internally ─────────────────
   if (isManage) {
     const { pathname } = request.nextUrl
+
+    // Next.js internals and API routes pass through as-is
+    if (pathname.startsWith('/_next') || pathname.startsWith('/api')) {
+      return supabaseResponse
+    }
+
+    // Already an /admin/* path (e.g. from requireAdmin redirect) — pass through
+    if (pathname.startsWith('/admin')) {
+      return supabaseResponse
+    }
+
+    // / → /admin (overview) or /admin/sign-in
     if (pathname === '/') {
       const target = isAdminUser(user) ? '/admin' : '/admin/sign-in'
       return NextResponse.rewrite(new URL(target, request.url))
     }
-    // /admin/*, /api/*, /_next/*, and any other path — pass through
-    return supabaseResponse
+
+    // /lawyers → /admin/lawyers, /verifications → /admin/verifications, etc.
+    return NextResponse.rewrite(new URL(`/admin${pathname}`, request.url))
   }
 
   // ── Main site ────────────────────────────────────────────────────────────
