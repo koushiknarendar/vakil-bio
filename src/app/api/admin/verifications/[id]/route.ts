@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import { createNotification } from '@/lib/notifications'
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://vakil.bio'
 
@@ -105,6 +106,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         updated_at: new Date().toISOString(),
       }).eq('id', app.lawyer_id)
 
+      createNotification(supabase, lawyer.id, 'verification_approved',
+        'Verification approved! 🎉', 'Your credentials have been verified. Activate your badge now.',
+        '/dashboard/verification').catch(() => {})
+
       // Send approval email (non-blocking)
       if (lawyer.email && process.env.RESEND_API_KEY) {
         const resend = new Resend(process.env.RESEND_API_KEY)
@@ -130,6 +135,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         verification_status: 'rejected',
         updated_at: new Date().toISOString(),
       }).eq('id', app.lawyer_id)
+
+      createNotification(supabase, lawyer.id, 'verification_rejected',
+        'Verification not approved', `Reason: ${rejectionReason}`,
+        '/dashboard/verification').catch(() => {})
 
       // Send rejection email (non-blocking)
       if (lawyer.email && process.env.RESEND_API_KEY) {

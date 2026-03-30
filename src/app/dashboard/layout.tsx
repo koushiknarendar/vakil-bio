@@ -9,10 +9,10 @@ import {
   User,
   Briefcase,
   Clock,
-  Bell,
   BadgeCheck,
   Building2,
 } from 'lucide-react'
+import { DashboardNotifications } from './DashboardNotifications'
 import { createClient } from '@/lib/supabase/server'
 
 const navItems = [
@@ -175,10 +175,7 @@ export default async function DashboardLayout({
           <div className="hidden lg:block" />
 
           <div className="flex items-center gap-3">
-            <button className="relative p-2 rounded-lg transition-colors"
-              style={{ color: 'var(--text-muted)' }}>
-              <Bell className="w-4 h-4" />
-            </button>
+            <DashboardNotifications />
             {lawyer.photo_url ? (
               <img src={lawyer.photo_url} alt={lawyer.full_name}
                 className="w-8 h-8 rounded-full object-cover"

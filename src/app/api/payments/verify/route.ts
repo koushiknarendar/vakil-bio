@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { triggerCalendarEvent } from '@/lib/calendar'
 import { getCashfreeOrder } from '@/lib/cashfree'
+import { createNotification } from '@/lib/notifications'
 
 function getSupabase() {
   return createClient(
@@ -163,6 +164,10 @@ export async function POST(request: NextRequest) {
     triggerCalendarEvent(booking).catch((e) =>
       console.error('Calendar trigger error:', e)
     )
+
+    // In-app notification to lawyer
+    createNotification(supabase, booking.lawyer_id, 'booking', 'New booking received',
+      `${booking.client_name} booked a session with you`, '/dashboard/bookings').catch(() => {})
 
     // Send notifications (non-blocking)
     const lawyerName = booking.lawyer?.full_name || 'Advocate'

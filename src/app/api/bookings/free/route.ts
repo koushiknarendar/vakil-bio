@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { triggerCalendarEvent } from '@/lib/calendar'
+import { createNotification } from '@/lib/notifications'
 
 function getSupabase() {
   return createClient(
@@ -48,6 +49,10 @@ export async function POST(request: NextRequest) {
 
     // Trigger calendar (non-blocking)
     triggerCalendarEvent(booking).catch((e) => console.error('Calendar trigger error:', e))
+
+    // Notify lawyer
+    createNotification(supabase, lawyerId, 'booking', 'New booking received',
+      `${clientName} booked a session with you`, '/dashboard/bookings').catch(() => {})
 
     return Response.json({ success: true, bookingId: booking.id })
   } catch (error) {

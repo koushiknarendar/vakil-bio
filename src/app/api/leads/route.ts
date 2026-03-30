@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createNotification } from '@/lib/notifications'
 
 function getSupabase() {
   return createClient(
@@ -99,6 +100,10 @@ export async function POST(request: NextRequest) {
 
       await sendWhatsAppNotification(lawyer.whatsapp_number, message)
     }
+
+    // In-app notification
+    createNotification(supabase, lawyerId, 'lead', 'New lead received',
+      `${clientName} is looking for help with ${caseType}`, '/dashboard/leads').catch(() => {})
 
     return Response.json({ leadId: lead.id })
   } catch (error) {
