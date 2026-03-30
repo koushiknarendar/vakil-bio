@@ -70,7 +70,7 @@ export default async function AdminVerificationsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Verification Applications</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
@@ -127,7 +127,7 @@ function ApplicationCard({ app, compact = false }: { app: VerificationApp; compa
   return (
     <div className="bg-white rounded-2xl border p-5 space-y-4" style={{ borderColor: 'var(--border)' }}>
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           {lawyer.photo_url ? (
             <img src={lawyer.photo_url} alt={lawyer.full_name} className="w-10 h-10 rounded-full object-cover" />

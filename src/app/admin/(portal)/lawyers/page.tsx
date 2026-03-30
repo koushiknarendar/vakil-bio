@@ -21,7 +21,54 @@ export default async function AdminLawyersPage() {
         <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>{lawyers?.length || 0} registered advocates</p>
       </div>
 
-      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+      {/* Mobile card list */}
+      <div className="sm:hidden space-y-3">
+        {(lawyers || []).map((lawyer) => (
+          <div key={lawyer.id} className="bg-white rounded-2xl border p-4 space-y-3" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="font-medium text-sm flex items-center gap-1" style={{ color: 'var(--text-primary)' }}>
+                  {lawyer.full_name}
+                  {lawyer.is_verified && <BadgeCheck className="w-3.5 h-3.5 text-blue-500" />}
+                </div>
+                <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>@{lawyer.username}{lawyer.location ? ` · ${lawyer.location}` : ''}</div>
+              </div>
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium shrink-0"
+                style={lawyer.plan === 'pro'
+                  ? { background: 'rgba(124,95,212,0.1)', color: 'var(--purple)' }
+                  : { background: 'rgba(15,23,42,0.06)', color: 'var(--text-muted)' }}>
+                {lawyer.plan}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {lawyer.is_suspended
+                  ? <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(220,38,38,0.08)', color: '#DC2626' }}>Suspended</span>
+                  : <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(16,185,129,0.08)', color: 'var(--green)' }}>Active</span>
+                }
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{lawyer.profile_views || 0} views</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link href={`/${lawyer.username}`} target="_blank"
+                  className="p-1.5 rounded-lg" style={{ color: 'var(--text-muted)' }}>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Link>
+                <Link href={`/admin/lawyers/${lawyer.id}`}
+                  className="text-xs font-medium px-3 py-1.5 rounded-lg"
+                  style={{ color: 'var(--blue)', background: 'rgba(79,122,255,0.08)' }}>
+                  Manage
+                </Link>
+              </div>
+            </div>
+          </div>
+        ))}
+        {(!lawyers || lawyers.length === 0) && (
+          <div className="py-16 text-center bg-white rounded-2xl border" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>No lawyers yet</div>
+        )}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden sm:block bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
         <table className="w-full text-sm">
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)', background: '#F8FAFC' }}>
@@ -91,3 +138,4 @@ export default async function AdminLawyersPage() {
     </div>
   )
 }
+
