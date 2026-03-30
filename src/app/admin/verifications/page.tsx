@@ -35,8 +35,8 @@ export default async function AdminVerificationsPage() {
   const { data: { user } } = await authSupabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim())
-  if (!adminEmails.includes(user.email ?? '')) redirect('/dashboard')
+  const adminPhones = (process.env.ADMIN_PHONES || '').split(',').map(e => e.trim())
+  if (!adminPhones.includes(user.phone ?? '')) redirect('/dashboard')
 
   const supabase = getServiceSupabase()
 
