@@ -27,10 +27,10 @@ function BookingDetailSheet({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       onClick={onClose}>
-      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.4)' }} />
+      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.5)' }} />
       <div
         className="relative w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-5"
-        style={{ background: 'var(--surface)', zIndex: 1 }}
+        style={{ background: '#ffffff', zIndex: 1, boxShadow: '0 25px 50px rgba(0,0,0,0.25)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
