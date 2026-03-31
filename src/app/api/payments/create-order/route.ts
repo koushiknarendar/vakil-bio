@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const cfOrder = await createCashfreeOrder({
       orderId,
       amount,
-      customerId: clientEmail,
+      customerId: orderId,
       customerName: clientName,
       customerEmail: clientEmail,
       customerPhone: clientPhone,
