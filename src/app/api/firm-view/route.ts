@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    await supabase.rpc('increment_firm_views', { p_company_id: companyId }).catch(() => {})
+    await supabase.rpc('increment_firm_views', { p_company_id: companyId })
   } catch {
     // silently ignore
   }
