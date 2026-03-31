@@ -110,7 +110,26 @@ export default async function DashboardPage() {
         <StatCard icon={TrendingUp} label="Profile Views" value={lawyer.profile_views?.toLocaleString('en-IN') || '0'} sub="This month" iconColor="var(--blue)" iconBg="rgba(79,122,255,0.1)" />
         <StatCard icon={CalendarCheck} label="Bookings" value={bookingsThisMonth} sub="This month" iconColor="var(--green)" iconBg="rgba(16,185,129,0.1)" />
         <StatCard icon={Users} label="Enquiries" value={leadsThisMonth} sub="This month" iconColor="var(--purple)" iconBg="rgba(124,95,212,0.1)" />
-        <StatCard icon={IndianRupee} label="Earnings" value={earningsThisMonth > 0 ? '₹' + earningsThisMonth.toLocaleString('en-IN') : '₹0'} sub="This month" iconColor="var(--green)" iconBg="rgba(16,185,129,0.1)" />
+        <div className="glass rounded-2xl p-5 flex flex-col gap-3">
+          <div className="flex items-start justify-between">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{ background: 'rgba(16,185,129,0.1)', color: 'var(--green)' }}>
+              <IndianRupee className="w-4 h-4" />
+            </div>
+          </div>
+          <div>
+            <div className="font-heading text-2xl font-bold mb-0.5" style={{ color: 'var(--text-primary)' }}>
+              {earningsThisMonth > 0 ? '₹' + earningsThisMonth.toLocaleString('en-IN') : '₹0'}
+            </div>
+            <div className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>Earnings</div>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>This month</div>
+          </div>
+          <div className="flex items-center gap-1.5 rounded-lg px-2 py-1 w-fit text-xs font-medium"
+            style={{ background: 'rgba(16,185,129,0.1)', color: 'var(--green)' }}>
+            <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: 'var(--green)' }} />
+            Weekly payouts
+          </div>
+        </div>
       </div>
 
       {/* Profile completeness */}
