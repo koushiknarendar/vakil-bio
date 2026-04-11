@@ -23,10 +23,20 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } })
-    setLoading(false)
-    if (error) { setError(error.message); return }
-    setStep('otp')
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
+      setLoading(false)
+      if (!res.ok) { setError(data.error || 'Failed to send OTP'); return }
+      setStep('otp')
+    } catch (err) {
+      setLoading(false)
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    }
   }
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
@@ -34,13 +44,26 @@ export default function LoginPage() {
     setError('')
     if (otp.length < 6) { setError('Please enter the full OTP code'); return }
     setLoading(true)
-    const { data, error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'email' })
-    if (error) { setLoading(false); setError(error.message); return }
-    if (data.user) {
-      const { data: lawyer } = await supabase.from('lawyers').select('id').eq('user_id', data.user.id).single()
-      router.push(lawyer ? '/dashboard' : '/auth/onboarding')
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setLoading(false); setError(data.error || 'Failed to verify OTP'); return }
+
+      // Get current user after auth
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: lawyer } = await supabase.from('lawyers').select('id').eq('user_id', user.id).single()
+        router.push(lawyer ? '/dashboard' : '/auth/onboarding')
+      }
+      setLoading(false)
+    } catch (err) {
+      setLoading(false)
+      setError(err instanceof Error ? err.message : 'An error occurred')
     }
-    setLoading(false)
   }
 
   const inputStyle = {
